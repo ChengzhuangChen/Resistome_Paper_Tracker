@@ -1,0 +1,29 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: arg-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - arg_data:/app/data
+      - ./01fenqu.xlsx:/app/data/01fenqu.xlsx:ro
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: arg-frontend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+volumes:
+  arg_data:
