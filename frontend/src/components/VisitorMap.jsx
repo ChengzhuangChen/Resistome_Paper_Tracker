@@ -32,7 +32,7 @@ export default function VisitorMap({ onClose }) {
 
       // Register world map
       try {
-        const resp = await fetch('https://fastly.jsdelivr.net/npm/echarts@5.5.0/map/json/world.json')
+        const resp = await fetch('/world.json')
         const worldJson = await resp.json()
         echarts.registerMap('world', worldJson)
       } catch {

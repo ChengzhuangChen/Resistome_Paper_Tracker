@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
-import { ComposableMap, Geographies, Geography, ZoomableGroup, Marker } from 'react-simple-maps'
+import { useEffect, useRef, useState } from 'react'
 import { fetchVisitorMap } from '../api'
 
-const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
-
 export default function GlobalVisitorMap() {
+  const chartRef = useRef(null)
+  const chartInstance = useRef(null)
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -24,7 +23,97 @@ export default function GlobalVisitorMap() {
     return () => { cancelled = true }
   }, [])
 
-  const maxCount = data.length > 0 ? Math.max(...data.map((d) => d.count)) : 1
+  useEffect(() => {
+    if (loading || !chartRef.current) return
+    let disposed = false
+
+    const initChart = async () => {
+      const echarts = await import('echarts')
+      if (disposed) return
+
+      try {
+        const resp = await fetch('/world.json')
+        const worldJson = await resp.json()
+        echarts.registerMap('world', worldJson)
+      } catch {
+        // Fallback: no map data
+        return
+      }
+
+      if (!chartRef.current || disposed) return
+      const instance = echarts.init(chartRef.current, null, { renderer: 'canvas' })
+      chartInstance.current = instance
+
+      const scatterData = data.map((loc) => ({
+        name: `${loc.country} · ${loc.city}`,
+        value: [loc.longitude, loc.latitude, loc.count],
+        count: loc.count,
+      }))
+
+      const option = {
+        backgroundColor: 'transparent',
+        tooltip: {
+          trigger: 'item',
+          formatter: (params) => {
+            if (params.seriesType === 'effectScatter') {
+              return `${params.name}<br/>${params.data.count} 次访问`
+            }
+            return params.name
+          },
+        },
+        geo: {
+          map: 'world',
+          roam: true,
+          zoom: 1.2,
+          label: { show: false },
+          itemStyle: {
+            areaColor: '#e5e7eb',
+            borderColor: '#d1d5db',
+          },
+          emphasis: {
+            itemStyle: { areaColor: '#cbd5e1' },
+          },
+        },
+        series: [
+          {
+            type: 'effectScatter',
+            coordinateSystem: 'geo',
+            data: scatterData,
+            symbolSize: (val) => Math.max(4, Math.min(12, val[2] * 2 + 4)),
+            showEffectOn: 'render',
+            rippleEffect: {
+              brushType: 'stroke',
+              scale: 3,
+            },
+            itemStyle: {
+              color: '#2563eb',
+              shadowBlur: 10,
+              shadowColor: '#2563eb',
+            },
+          },
+        ],
+      }
+
+      instance.setOption(option)
+
+      const resize = () => instance.resize()
+      window.addEventListener('resize', resize)
+
+      return () => {
+        window.removeEventListener('resize', resize)
+      }
+    }
+
+    const cleanup = initChart()
+
+    return () => {
+      disposed = true
+      if (chartInstance.current) {
+        chartInstance.current.dispose()
+        chartInstance.current = null
+      }
+    }
+  }, [data, loading])
 
   return (
     <div
@@ -40,47 +129,7 @@ export default function GlobalVisitorMap() {
             加载中...
           </div>
         ) : (
-          <ComposableMap
-            projection="geoEqualEarth"
-            projectionConfig={{ scale: 140, center: [0, 20] }}
-            style={{ width: '100%', height: 'auto' }}
-          >
-            <ZoomableGroup>
-              <Geographies geography={geoUrl}>
-                {({ geographies }) =>
-                  geographies.map((geo) => (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      fill="#e5e7eb"
-                      stroke="#d1d5db"
-                      strokeWidth={0.5}
-                      style={{
-                        default: { outline: 'none' },
-                        hover: { outline: 'none', fill: '#cbd5e1' },
-                        pressed: { outline: 'none' },
-                      }}
-                    />
-                  ))
-                }
-              </Geographies>
-              {data.map((loc, i) => {
-                const r = Math.max(3, Math.min(10, (loc.count / maxCount) * 7 + 3))
-                return (
-                  <Marker key={i} coordinates={[loc.longitude, loc.latitude]}>
-                    <circle
-                      r={r}
-                      fill="#2563eb"
-                      fillOpacity={0.5}
-                      stroke="#2563eb"
-                      strokeWidth={1}
-                    />
-                    <title>{`${loc.country} · ${loc.city} · ${loc.count} 次访问`}</title>
-                  </Marker>
-                )
-              })}
-            </ZoomableGroup>
-          </ComposableMap>
+          <div ref={chartRef} className="w-full h-80" />
         )}
         {!loading && data.length === 0 && (
           <div className="text-center text-xs mt-2" style={{ color: 'var(--muted)' }}>

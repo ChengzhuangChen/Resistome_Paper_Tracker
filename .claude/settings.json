@@ -15,7 +15,15 @@
       "Bash(MSYS_NO_PATHCONV=1 docker exec arg-backend curl -s http://localhost:8000/api/visitors/ping)",
       "Bash(MSYS_NO_PATHCONV=1 docker exec arg-backend python -c \"import sqlite3, os; db_path = os.environ.get\\('DATABASE_URL', 'sqlite:////app/data/args.db'\\).replace\\('sqlite:///', ''\\); conn = sqlite3.connect\\(db_path\\); c = conn.cursor\\(\\); c.execute\\('SELECT COUNT\\(*\\) FROM visitor_log'\\); print\\('Count:', c.fetchone\\(\\)[0]\\); c.execute\\('SELECT * FROM visitor_log LIMIT 5'\\); [print\\(r\\) for r in c.fetchall\\(\\)]; conn.close\\(\\)\")",
       "Bash(MSYS_NO_PATHCONV=1 docker exec arg-backend python -u /app/app/backfill_pub_date.py)",
-      "Bash(docker compose *)"
+      "Bash(docker compose *)",
+      "Bash(docker restart *)",
+      "Bash(curl -s http://localhost:8000/api/visitors/stats)",
+      "Bash(docker cp *)",
+      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" http://localhost:8000/api/visitors/ping)",
+      "Bash(curl -sL \"https://fastly.jsdelivr.net/npm/echarts@5.5.0/map/json/world.json\")",
+      "Bash(curl -sL \"https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json\")",
+      "Bash(curl -sL \"https://cdn.jsdelivr.net/npm/echarts@5.5.0/map/json/world.json\")",
+      "Bash(curl -sL \"https://unpkg.com/echarts@5.5.0/map/json/world.json\" -o frontend/public/world.json)"
     ]
   }
 }

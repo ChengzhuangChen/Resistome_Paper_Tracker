@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Dna, RefreshCw, Globe, ClipboardList, Mail, MessageCircle } from 'lucide-react'
 import { triggerUpdate } from '../api'
 
-export default function Header({ stats, onUpdateSuccess, onShowVisitorMap, onShowLogs }) {
+export default function Header({ onUpdateSuccess, onShowVisitorMap, onShowLogs }) {
   const [updating, setUpdating] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -91,7 +91,7 @@ export default function Header({ stats, onUpdateSuccess, onShowVisitorMap, onSho
                 <span className="text-xs font-medium" style={{ color: 'var(--text)' }}>如有建议或合作意向，欢迎联系：</span>
                 <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--muted)' }}>
                   <Mail className="w-3 h-3" />
-                  Email: chenchengzhuang@westlake.edu.com
+                  Email: chenchengzhuang@westlake.edu.cn
                 </span>
                 <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--muted)' }}>
                   <MessageCircle className="w-3 h-3" />
