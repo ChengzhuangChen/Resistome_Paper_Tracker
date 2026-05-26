@@ -109,7 +109,7 @@ NCBI_API_KEY=your_ncbi_api_key
 APP_SECRET_TOKEN=your_random_secret
 
 # 抓取起始日期（选填，默认 2024-01-01）
-FETCH_START_DATE=2024-01-01
+FETCH_START_DATE=2021-01-01
 ```
 
 ### 2. 准备期刊分区数据
