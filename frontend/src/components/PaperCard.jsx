@@ -53,12 +53,12 @@ export default function PaperCard({ paper, highlightText, onClick }) {
       <div className="w-full md:w-1.5 shrink-0" style={{ background: qStyle.bar }} />
 
       {/* Main content */}
-      <div className="flex-1 min-w-0 p-4 flex flex-col gap-2.5">
+      <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col gap-2 sm:gap-2.5">
         {/* Title row */}
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[15px] font-bold leading-snug" style={{ color: 'var(--text)' }}>
+              <span className="text-sm sm:text-[15px] font-bold leading-snug" style={{ color: 'var(--text)' }}>
                 {highlightText(paper.title)}
               </span>
               {paper.is_cns && (
@@ -114,17 +114,17 @@ export default function PaperCard({ paper, highlightText, onClick }) {
         </div>
 
         {/* Author / affiliation row */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+        <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs">
           {paper.corresponding_author && (
-            <span className="flex items-center gap-1" style={{ color: 'var(--muted)' }}>
-              <FaUser className="w-3 h-3" />
-              {paper.corresponding_author}
+            <span className="flex items-center gap-1 max-w-[45%] truncate" style={{ color: 'var(--muted)' }}>
+              <FaUser className="w-3 h-3 shrink-0" />
+              <span className="truncate">{paper.corresponding_author}</span>
             </span>
           )}
           {paper.first_affiliation && (
-            <span className="flex items-center gap-1 max-w-sm truncate" style={{ color: 'var(--muted)' }} title={paper.first_affiliation}>
+            <span className="flex items-center gap-1 max-w-[45%] truncate" style={{ color: 'var(--muted)' }} title={paper.first_affiliation}>
               <FaBuilding className="w-3 h-3 shrink-0" />
-              <span className="truncate">{truncate(paper.first_affiliation, 30)}</span>
+              <span className="truncate">{truncate(paper.first_affiliation, 24)}</span>
             </span>
           )}
         </div>
@@ -169,7 +169,7 @@ export default function PaperCard({ paper, highlightText, onClick }) {
 
         {/* Abstract row */}
         <div className="space-y-2">
-          <p className="text-sm leading-relaxed" style={{ color: '#374151' }}>
+          <p className="text-xs sm:text-sm leading-relaxed" style={{ color: '#374151' }}>
             {highlightText(abstractPreview)}
           </p>
 

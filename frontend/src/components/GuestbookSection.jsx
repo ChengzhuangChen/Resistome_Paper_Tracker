@@ -70,7 +70,7 @@ export default function GuestbookSection() {
 
   return (
     <div
-      className="rounded-xl p-5"
+      className="rounded-xl p-3 sm:p-5"
       style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.06)' }}
     >
       <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
@@ -118,11 +118,11 @@ export default function GuestbookSection() {
           </div>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex justify-end sm:justify-end">
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50"
             style={{ background: 'var(--accent)' }}
           >
             {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
@@ -148,7 +148,7 @@ export default function GuestbookSection() {
           messages.map((m) => (
             <div
               key={m.id}
-              className="rounded-lg p-3"
+              className="rounded-lg p-2.5 sm:p-3"
               style={{ background: '#f9fafb', border: '1px solid var(--border)' }}
             >
               <div className="flex items-center justify-between mb-1">
@@ -159,7 +159,7 @@ export default function GuestbookSection() {
                   {timeAgo(m.created_at)}
                 </span>
               </div>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text)' }}>
+              <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'var(--text)' }}>
                 {m.content}
               </p>
             </div>

@@ -1,4 +1,5 @@
 import os
+from datetime import date
 from pathlib import Path
 from pydantic_settings import BaseSettings
 
@@ -25,6 +26,7 @@ class Settings(BaseSettings):
     # App
     app_secret_token: str
     database_url: str = "sqlite:///./data/arg_tracker.db"
+    fetch_start_date: date = date(2024, 1, 1)
     fetch_days: int = 7
     max_papers_per_batch: int = 50
     llm_max_concurrent: int = 5

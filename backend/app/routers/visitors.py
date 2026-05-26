@@ -21,7 +21,8 @@ def _is_local_ip(ip: str) -> bool:
     ip = ip.strip()
     if ip in ("127.0.0.1", "::1", "localhost"):
         return True
-    if ip.startswith("172.18.0."):
+    # Docker default bridge networks
+    if ip.startswith(("172.17.0.", "172.18.0.", "172.19.0.", "172.20.0.", "192.168.")):
         return True
     return False
 

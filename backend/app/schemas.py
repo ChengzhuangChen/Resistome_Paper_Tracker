@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from datetime import date, datetime
+from pydantic import BaseModel, field_serializer
+from datetime import date, datetime, timezone, timedelta
 from typing import Optional
 
 class PaperBase(BaseModel):
@@ -177,6 +177,11 @@ class GuestbookItem(BaseModel):
     content: str
     created_at: datetime
     ip: Optional[str] = None
+
+    @field_serializer('created_at')
+    def serialize_created_at(self, dt: datetime) -> str:
+        beijing = timezone(timedelta(hours=8))
+        return dt.replace(tzinfo=timezone.utc).astimezone(beijing).isoformat()
 
     class Config:
         from_attributes = True

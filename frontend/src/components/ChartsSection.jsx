@@ -85,7 +85,7 @@ export default function ChartsSection({ stats }) {
       {/* Row 1: Trend line chart */}
       <ChartCard title="近30天发文趋势">
         {loading ? <EmptyState /> : trendData.length === 0 ? <EmptyState /> : (
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={220}>
             <LineChart data={trendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
               <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} />
@@ -111,7 +111,7 @@ export default function ChartsSection({ stats }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ChartCard title="学科分布">
           {subjectData.length === 0 ? <EmptyState /> : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={220}>
               <PieChart>
                 <Pie
                   data={subjectData}
@@ -141,7 +141,7 @@ export default function ChartsSection({ stats }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <ChartCard title="月度文献数量">
           {monthlyData.length === 0 ? <EmptyState /> : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={220}>
               <BarChart data={monthlyData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} />
@@ -159,7 +159,7 @@ export default function ChartsSection({ stats }) {
 
         <ChartCard title="年度文献数量">
           {yearlyData.length === 0 ? <EmptyState /> : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={220}>
               <BarChart data={yearlyData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
                 <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} />

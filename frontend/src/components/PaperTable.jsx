@@ -24,8 +24,8 @@ const SORT_MAP = {
 
 export default function PaperTable({ papers, loading, sortBy, onSortChange, highlightText, onRowClick }) {
   const columns = [
-    { key: 'date', label: '发表日期', width: 70 },
-    { key: 'type', label: '文献类型', width: 65 },
+    { key: 'date', label: '发表日期', width: 88 },
+    { key: 'type', label: '文献类型', width: 88 },
     { key: 'title', label: '题目', width: 140 },
     { key: 'journal', label: '期刊名', width: 90 },
     { key: 'corr_author', label: '通讯作者', width: 75 },
@@ -43,7 +43,7 @@ export default function PaperTable({ papers, loading, sortBy, onSortChange, high
 
   const getSortIcon = (colKey) => {
     const current = SORT_MAP[sortBy]
-    if (!current || current.col !== colKey) return <ArrowUpDown className="w-3 h-3 opacity-30" />
+    if (!current || current.col !== colKey) return <ArrowUpDown className="w-3 h-3 opacity-50" />
     return current.dir === 'desc'
       ? <ArrowDown className="w-3 h-3" style={{ color: 'var(--accent)' }} />
       : <ArrowUp className="w-3 h-3" style={{ color: 'var(--accent)' }} />

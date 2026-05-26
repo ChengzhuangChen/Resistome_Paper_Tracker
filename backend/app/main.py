@@ -93,7 +93,7 @@ async def on_startup():
             print("[Startup] Database empty, running historical backfill...")
             from datetime import date
             raw_papers = pubmed_fetcher.fetch_historical(
-                start_date=date(2026, 1, 1),
+                start_date=settings.fetch_start_date,
                 end_date=date.today(),
             )
             inserted = 0
@@ -133,11 +133,21 @@ async def on_startup():
     finally:
         db.close()
 
+    # Start daily scheduler (02:00 UTC = 10:00 Beijing)
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    from app.scheduler import scheduled_update
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(scheduled_update, CronTrigger(hour=2, minute=0))
+    scheduler.start()
+    print("[Startup] Scheduler started. Daily update at 02:00 UTC (10:00 Beijing).")
+
 
 app.include_router(papers.router)
 app.include_router(stats.router)
 app.include_router(update.router)
 app.include_router(logs.router)
+app.include_router(logs.update_logs_router)
 app.include_router(visitors.router)
 app.include_router(guestbook.router)
 app.include_router(keywords.router)

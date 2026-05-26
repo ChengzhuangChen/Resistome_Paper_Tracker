@@ -56,13 +56,13 @@ export default function PaperModal({ paper, onClose }) {
       onClick={onClose}
     >
       <div
-        className="rounded-xl shadow-2xl w-full max-w-2xl max-h-[88vh] overflow-y-auto"
-        style={{ background: 'var(--surface)' }}
+        className="rounded-xl shadow-2xl w-full sm:max-w-2xl sm:max-h-[88vh] max-h-[100dvh] overflow-y-auto"
+        style={{ background: 'var(--surface)', width: '100%' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div
-          className="sticky top-0 z-10 flex items-start justify-between gap-4 px-6 py-5"
+          className="sticky top-0 z-10 flex items-start justify-between gap-4 px-4 sm:px-6 py-4 sm:py-5"
           style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
         >
           <div className="min-w-0">
@@ -127,7 +127,7 @@ export default function PaperModal({ paper, onClose }) {
         </div>
 
         {/* Meta info row */}
-        <div className="px-6 pt-4">
+        <div className="px-4 sm:px-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             {paper.corresponding_author && (
               <div className="flex items-center gap-1.5">
@@ -161,7 +161,7 @@ export default function PaperModal({ paper, onClose }) {
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 space-y-5">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
           {paper.abstract_en && (
             <Section label="英文摘要（原文）" value={paper.abstract_en} icon={FileText} />
           )}

@@ -9,8 +9,8 @@ from app.services.journal_matcher import journal_matcher
 
 Entrez.email = settings.ncbi_email
 
-# Only keep papers published in 2026 or later
-_MIN_PUB_DATE = date(2026, 1, 1)
+# Only keep papers published in 2024 or later
+_MIN_PUB_DATE = settings.fetch_start_date
 
 # Validate API key on startup; fallback to no key if invalid
 if settings.ncbi_api_key:
@@ -251,7 +251,7 @@ class PubMedFetcher:
 
     def search(self, days: int = 7, retmax: int = 200) -> List[str]:
         end_date = datetime.utcnow().date()
-        start_date = max(end_date - timedelta(days=days), datetime(2026, 5, 1).date())
+        start_date = max(end_date - timedelta(days=days), _MIN_PUB_DATE)
         date_range = f'{start_date.strftime("%Y/%m/%d")}:{end_date.strftime("%Y/%m/%d")}[Date - Publication]'
         full_query = f"({self.query}) AND {date_range}"
 

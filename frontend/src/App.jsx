@@ -7,6 +7,7 @@ import SectionView from './components/SectionView'
 import PaperModal from './components/PaperModal'
 import VisitorMap from './components/VisitorMap'
 import UpdateLogPanel from './components/UpdateLogPanel'
+import UpdateFaqPanel from './components/UpdateFaqPanel'
 import StatCards from './components/StatCards'
 import ChartsSection from './components/ChartsSection'
 import GlobalVisitorMap from './components/GlobalVisitorMap'
@@ -38,6 +39,7 @@ function App() {
 
   const [showVisitorMap, setShowVisitorMap] = useState(false)
   const [showLogPanel, setShowLogPanel] = useState(false)
+  const [showUpdateFaq, setShowUpdateFaq] = useState(false)
 
   // Section view needs all papers to show true quartile distribution
   const pageSize = view === 'section' ? 1000 : 5
@@ -96,6 +98,18 @@ function App() {
     visitorPing().catch(() => {})
   }, [])
 
+  // Auto-switch to card view on mobile (< 640px)
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640 && view === 'table') {
+        setView('card')
+      }
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [view])
+
   const totalPages = Math.ceil(total / pageSize)
 
   const highlightText = useMemo(() => {
@@ -116,7 +130,21 @@ function App() {
         onUpdateSuccess={loadStats}
         onShowVisitorMap={() => setShowVisitorMap(true)}
         onShowLogs={() => setShowLogPanel(true)}
+        onShowUpdateFaq={() => setShowUpdateFaq(true)}
       />
+
+      {/* Total papers count card */}
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-6 -mt-1 mb-1">
+        <div
+          className="rounded-xl py-5 px-4 text-center"
+          style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.06)' }}
+        >
+          <div className="text-3xl sm:text-4xl font-bold" style={{ color: 'var(--accent)' }}>
+            {stats?.total_count ?? '-'}
+          </div>
+          <div className="text-sm mt-1" style={{ color: 'var(--muted)' }}>篇文献</div>
+        </div>
+      </div>
 
       <Toolbar
         query={query}
@@ -127,10 +155,9 @@ function App() {
         onSortChange={setSortBy}
         view={view}
         onViewChange={setView}
-        total={total}
       />
 
-      <main className="max-w-[1600px] mx-auto px-6 pb-10 space-y-6">
+      <main className="max-w-[1600px] mx-auto px-3 sm:px-6 pb-10 space-y-6">
         {/* Stat cards */}
         <StatCards stats={stats} />
 
@@ -210,6 +237,10 @@ function App() {
 
       {showLogPanel && (
         <UpdateLogPanel onClose={() => setShowLogPanel(false)} />
+      )}
+
+      {showUpdateFaq && (
+        <UpdateFaqPanel onClose={() => setShowUpdateFaq(false)} />
       )}
 
       {/* Donate */}

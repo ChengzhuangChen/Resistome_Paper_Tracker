@@ -123,13 +123,13 @@ export default function GlobalVisitorMap() {
       <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>
         全球访客分布
       </h3>
-      <div className="w-full" style={{ minHeight: 320 }}>
+      <div className="w-full" style={{ minHeight: 260 }}>
         {loading ? (
-          <div className="flex items-center justify-center h-80 text-xs" style={{ color: 'var(--muted)' }}>
+          <div className="flex items-center justify-center h-64 text-xs" style={{ color: 'var(--muted)' }}>
             加载中...
           </div>
         ) : (
-          <div ref={chartRef} className="w-full h-80" />
+          <div ref={chartRef} className="w-full h-64" />
         )}
         {!loading && data.length === 0 && (
           <div className="text-center text-xs mt-2" style={{ color: 'var(--muted)' }}>

@@ -40,6 +40,10 @@ a:hover { text-decoration: underline; }
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
+@media (max-width: 639px) {
+  html { font-size: 14px; }
+}
+
 .skeleton-pulse {
   animation: skeleton-pulse 1.6s ease-in-out infinite;
 }

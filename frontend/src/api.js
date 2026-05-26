@@ -19,6 +19,7 @@ export const fetchMonthly = () => api.get('/stats/monthly')
 export const triggerUpdate = (token) =>
   api.post('/update', null, { headers: { Authorization: `Bearer ${token}` } })
 export const fetchLogs = (params) => api.get('/logs', { params })
+export const fetchUpdateLogs = (limit = 7) => api.get('/update-logs', { params: { limit } })
 export const fetchVisitorStats = () => api.get('/visitors/stats')
 export const recordVisitor = (payload) => api.post('/visitors', payload)
 export const visitorPing = () => api.get('/visitors/ping')

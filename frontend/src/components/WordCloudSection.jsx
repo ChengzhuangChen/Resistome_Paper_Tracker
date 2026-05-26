@@ -62,7 +62,7 @@ export default function WordCloudSection() {
       ) : words.length === 0 ? (
         <EmptyState />
       ) : (
-        <div style={{ height: 260, position: 'relative', zIndex: 1 }}>
+        <div className="w-full" style={{ height: 220, position: 'relative', zIndex: 1 }}>
           <ReactWordcloud words={words} options={options} />
         </div>
       )}

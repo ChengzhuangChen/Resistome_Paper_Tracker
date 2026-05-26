@@ -1,6 +1,6 @@
-# ARG 前沿追踪
+# Resistome Paper Tracker
 
-**ARG 前沿追踪** (Antibiotic Resistance Gene Tracker) 是一个文献监测与展示平台，专注于抗生素耐药基因（ARGs）领域的最新研究进展。
+**Resistome Paper Tracker** 是一个文献监测与展示平台，专注于耐药基因（Antibiotic Resistance Gene, ARG）领域的最新研究进展。
 
 ## 数据来源
 
@@ -12,7 +12,7 @@
 resistome[Title/Abstract] OR resistomes[Title/Abstract] OR "antibiotics resistance gene"[Title/Abstract] OR "antibiotics resistance genes"[Title/Abstract]
 ```
 
-该策略可以匹配主题中包含 **resistome**、**resistomes**、**antibiotics resistance gene**、**antibiotics resistance genes** 的文献，确保全面覆盖耐药基因谱相关研究。检索范围限定为 **2026 年 5 月 1 日**起收录的文献。
+该策略匹配主题中包含 **resistome**、**resistomes**、**antibiotics resistance gene**、**antibiotics resistance genes** 的文献，确保全面覆盖耐药基因谱相关研究。
 
 ## 文献加工与摘要生成
 
@@ -36,7 +36,7 @@ resistome[Title/Abstract] OR resistomes[Title/Abstract] OR "antibiotics resistan
 ## 项目结构
 
 ```
-arg-tracker/
+resistome-tracker/
 ├── docker-compose.yml          # 一键部署
 ├── .env                        # 环境变量配置
 ├── backend/                    # FastAPI 后端
@@ -48,17 +48,19 @@ arg-tracker/
 │       ├── database.py         # SQLite 连接
 │       ├── models.py           # SQLAlchemy 模型
 │       ├── schemas.py          # Pydantic 模型
+│       ├── scheduler.py        # 定时任务调度
 │       ├── routers/
 │       │   ├── papers.py       # 文献列表与详情 API
-│       │   ├── stats.py        # 统计 API
-│       │   ├── update.py       # 手动触发更新 API
 │       │   ├── logs.py         # 爬取日志 API
-│       │   └── visitors.py     # 访客统计 API
+│       │   ├── update.py       # 手动触发更新 API
+│       │   ├── visitors.py     # 访客统计 API
+│       │   └── guestbook.py    # 留言板 API
 │       └── services/
 │           ├── pubmed_fetcher.py   # PubMed 抓取（Biopython Entrez）
 │           ├── llm_processor.py    # DeepSeek LLM 分析
 │           ├── geoip.py            # IP 地理位置解析
-│           └── email_sender.py     # SMTP 邮件推送（可选）
+│           ├── email_sender.py     # SMTP 邮件推送（可选）
+│           └── journal_matcher.py  # 期刊分区匹配
 └── frontend/                   # React + Vite + Tailwind 前端
     ├── Dockerfile
     ├── nginx.conf
@@ -66,8 +68,10 @@ arg-tracker/
     └── src/
         ├── App.jsx
         ├── api.js
-        └── components/         # Header, Toolbar, PaperTable, PaperCard, PaperModal,
-                                # SectionView, VisitorMap, UpdateLogPanel
+        └── components/         # Header, Toolbar, PaperTable, PaperCard,
+                                # PaperModal, SectionView, ChartsSection,
+                                # GlobalVisitorMap, GuestbookSection,
+                                # UpdateLogPanel, UpdateFaqPanel, WordCloudSection
 ```
 
 ## 快速启动
@@ -105,12 +109,15 @@ docker-compose up --build -d
 ## 主要功能
 
 - **手动触发抓取**：通过网页右上角按钮一键抓取 PubMed 新增文献
+- **定时自动更新**：支持配置定时任务，自动定期抓取最新文献
 - **智能去重**：基于 PMID / DOI 去重
 - **LLM 核心要点提取**：DeepSeek 自动生成中文摘要、方法、对象、创新点、结论
 - **全文检索**：支持题目、摘要、期刊、方法等多字段搜索
 - **多维筛选**：文献类型、JCR 分区、日期范围
 - **分区展示**：按 JCR 分区分组展示，快速识别高质量论文
+- **可视化图表**：词云、文献趋势图等多维度数据展示
 - **访客地图**：ECharts 世界地图展示全球访客分布
+- **留言板**：访客留言互动功能
 - **更新日志**：记录每次爬取的检索数、新增数、分析成功数与失败数
 - **响应式 UI**：蓝白学术风格，支持移动端
 
@@ -124,11 +131,13 @@ docker-compose up --build -d
 | `GET /api/logs` | 日志 | 爬取历史记录分页 |
 | `GET /api/visitors/stats` | 访客统计 | 总访客数、国家分布、地理坐标 |
 | `POST /api/update` | 更新 | 手动触发抓取，Header `Authorization: Bearer <token>` |
+| `POST /api/guestbook` | 留言 | 提交留言 |
+| `GET /api/guestbook` | 留言列表 | 获取留言列表 |
 
 ## 技术栈
 
-- **后端**：Python 3.11, FastAPI, SQLAlchemy, Biopython, httpx
-- **前端**：React 18, Vite, Tailwind CSS, Lucide React, ECharts
+- **后端**：Python 3.11, FastAPI, SQLAlchemy, Biopython, httpx, APScheduler
+- **前端**：React 18, Vite, Tailwind CSS, Lucide React, ECharts, react-wordcloud
 - **数据库**：SQLite（默认），可无缝切换至 PostgreSQL
 - **部署**：Docker, docker-compose, Nginx
 

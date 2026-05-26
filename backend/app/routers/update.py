@@ -10,15 +10,9 @@ from app.services.llm_processor import llm_processor
 
 router = APIRouter(prefix="/api/update", tags=["update"])
 
-@router.post("")
-async def trigger_update(
-    authorization: str = Header(..., alias="Authorization"),
-    db: Session = Depends(get_db),
-):
-    expected = f"Bearer {settings.app_secret_token}"
-    if authorization != expected:
-        raise HTTPException(status_code=403, detail="Invalid token")
 
+async def run_update(db: Session) -> dict:
+    """Core update logic reused by both manual trigger and scheduler."""
     paper_ids = pubmed_fetcher.search(days=settings.fetch_days)
     raw_papers = pubmed_fetcher.fetch_details(paper_ids)
 
@@ -92,22 +86,43 @@ async def trigger_update(
             if settings.llm_batch_interval > 0 and idx < len(new_papers) - 1:
                 await asyncio.sleep(settings.llm_batch_interval)
 
+    return {
+        "searched": len(paper_ids),
+        "fetched": len(raw_papers),
+        "new": len(new_papers),
+        "enriched_count": len(enriched_today),
+        "enriched_papers": enriched_today,
+        "failed": failed_ids,
+    }
+
+
+@router.post("")
+async def trigger_update(
+    authorization: str = Header(..., alias="Authorization"),
+    db: Session = Depends(get_db),
+):
+    expected = f"Bearer {settings.app_secret_token}"
+    if authorization != expected:
+        raise HTTPException(status_code=403, detail="Invalid token")
+
+    result = await run_update(db)
+
     log = UpdateLog(
-        searched=len(paper_ids),
-        fetched=len(raw_papers),
-        new_count=len(new_papers),
-        enriched=len(enriched_today),
-        failed_count=len(failed_ids),
-        status="success" if not failed_ids else ("partial" if enriched_today else "failed"),
-        error_msg=",".join(failed_ids) if failed_ids else None,
+        searched=result["searched"],
+        fetched=result["fetched"],
+        new_count=result["new"],
+        enriched=result["enriched_count"],
+        failed_count=len(result["failed"]),
+        status="success" if not result["failed"] else ("partial" if result["enriched_count"] else "failed"),
+        error_msg=",".join(result["failed"]) if result["failed"] else None,
     )
     db.add(log)
     db.commit()
 
     return {
-        "searched": len(paper_ids),
-        "fetched": len(raw_papers),
-        "new": len(new_papers),
-        "enriched": len(enriched_today),
-        "failed": failed_ids if failed_ids else None,
+        "searched": result["searched"],
+        "fetched": result["fetched"],
+        "new": result["new"],
+        "enriched": result["enriched_count"],
+        "failed": result["failed"] if result["failed"] else None,
     }

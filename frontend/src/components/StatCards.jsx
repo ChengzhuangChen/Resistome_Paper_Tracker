@@ -23,11 +23,11 @@ export default function StatCards({ stats }) {
         return (
           <div
             key={c.key}
-            className="bg-white rounded-lg shadow-sm py-1.5 px-2.5 flex items-center gap-2"
+            className="bg-white rounded-lg shadow-sm py-2 px-3 flex items-center gap-2"
           >
-            <c.icon className="text-base" style={{ color: c.color }} />
+            <c.icon className="text-lg sm:text-base" style={{ color: c.color }} />
             <div>
-              <div className="text-base font-bold" style={{ color: 'var(--text)' }}>{value}</div>
+              <div className="text-lg sm:text-base font-bold" style={{ color: 'var(--text)' }}>{value}</div>
               <div className="text-xs" style={{ color: 'var(--muted)' }}>{c.label}</div>
             </div>
           </div>
