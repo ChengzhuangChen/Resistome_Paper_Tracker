@@ -1,172 +1,147 @@
 # Resistome Literature Tracker
 
-**Resistome Literature Tracker** 是一个文献监测与展示平台，专注于耐药基因（Antibiotic Resistance Genes, ARGs）领域的最新研究进展。
+耐药基因（Resistome）文献追踪平台，自动从 PubMed 抓取最新研究，支持 AI 摘要生成、数据可视化和多维度筛选。
 
-## 数据来源
+## 主要功能
 
-文献数据通过 NCBI Entrez API 从 PubMed 数据库获取。
+- **自动更新** - 每日 02:00（北京时间）自动抓取 PubMed 新文献，支持手动触发
+- **AI 摘要生成** - 基于 DeepSeek-v4-flash 自动提取中文摘要、研究方法、对象、创新点、结论
+- **多维度筛选** - 文献类型、JCR 分区、学科分类、影响因子、发表时间等
+- **三种视图** - 表格视图 / 卡片视图 / 分区视图
+- **数据可视化** - 词云、发表趋势图、全球访客地图
+- **访客追踪** - 记录访客地域分布
+- **留言板** - 访客互动功能
+- **数据导出** - 支持 CSV 格式导出筛选结果
 
-当前使用的检索策略为：
+## 技术栈
 
-```
-resistome[Title/Abstract] OR resistomes[Title/Abstract] OR "antibiotics resistance gene"[Title/Abstract] OR "antibiotics resistance genes"[Title/Abstract]
-```
-
-文献数据源为 PubMed 官方数据库，检索策略覆盖resistome、antibiotic resistance gene、antimicrobial resistance gene 及其各类变体等相关关键词；
-目前收录了 2021 年 1 月 1 日起发表的论文，系统每日定时自动同步更新，保证前沿文献不遗漏。
-
-## 文献加工与摘要生成
-
-每条文献在抓取后，通过 ** DeepSeek‑v4‑flash ** 自动提取以下中文字段，方便快速浏览：
-
-- **中文摘要** — 核心要点提炼
-- **主要研究方法**
-- **研究对象**
-- **核心创新点**
-- **主要结论**
-
-## 排序与筛选
-
-系统为文献标记 JCR 分区（若可获取），并支持按分区、期刊、文献类型、发表时间等多维度筛选，帮助研究者快速定位高质量论文。
-
-前端提供三种展示视图：
-- **分区视图**（默认）— 按 JCR 分区（Q1 / Q2 / Q3 / Q4 / NA）分组展示
-- **表格视图** — 紧凑列表，支持表头排序
-- **卡片视图** — 单篇卡片流，信息密度适中
+| 层级 | 技术 |
+|------|------|
+| 后端 | Python 3.11, FastAPI, SQLAlchemy, Biopython, APScheduler |
+| 前端 | React 18, Vite, Tailwind CSS, ECharts |
+| 数据库 | SQLite |
+| 部署 | Docker, docker-compose, Nginx |
 
 ## 项目结构
 
 ```
-resistome-tracker/
-├── docker-compose.yml          # 一键部署
-├── .env                        # 环境变量配置
-├── backend/                    # FastAPI 后端
+.
+├── docker-compose.yml
+├── .env                      # 环境变量（需自行创建）
+├── 01fenqu.xlsx              # 期刊分区数据（需自行放置）
+│
+├── backend/
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   └── app/
-│       ├── main.py             # FastAPI 入口（含访客追踪中间件）
-│       ├── config.py           # 配置管理
-│       ├── database.py         # SQLite 连接
-│       ├── models.py           # SQLAlchemy 模型
-│       ├── schemas.py          # Pydantic 模型
-│       ├── scheduler.py        # 定时任务调度
+│       ├── main.py           # FastAPI 入口，访客追踪，定时任务
+│       ├── config.py         # 配置管理
+│       ├── database.py       # SQLite 连接
+│       ├── models.py         # 数据模型
+│       ├── schemas.py        # Pydantic 模型
+│       ├── scheduler.py      # 定时任务
 │       ├── routers/
-│       │   ├── papers.py       # 文献列表与详情 API
-│       │   ├── logs.py         # 爬取日志 API
-│       │   ├── update.py       # 手动触发更新 API
-│       │   ├── visitors.py     # 访客统计 API
-│       │   └── guestbook.py    # 留言板 API
+│       │   ├── papers.py     # 文献查询 API
+│       │   ├── stats.py      # 统计 API
+│       │   ├── update.py     # 更新 / 富化 API
+│       │   ├── logs.py       # 更新日志 API
+│       │   ├── visitors.py   # 访客统计 API
+│       │   ├── guestbook.py  # 留言板 API
+│       │   └── keywords.py   # 关键词 API
 │       └── services/
-│           ├── pubmed_fetcher.py   # PubMed 抓取（Biopython Entrez）
-│           ├── llm_processor.py    # DeepSeek LLM 分析
-│           ├── geoip.py            # IP 地理位置解析
-│           ├── email_sender.py     # SMTP 邮件推送（可选）
-│           └── journal_matcher.py  # 期刊分区匹配
-└── frontend/                   # React + Vite + Tailwind 前端
+│           ├── pubmed_fetcher.py   # PubMed 抓取
+│           ├── llm_processor.py    # DeepSeek LLM
+│           ├── journal_matcher.py  # 期刊分区匹配
+│           ├── geoip.py            # IP 地理位置
+│           └── email_sender.py     # 邮件通知
+│
+└── frontend/
     ├── Dockerfile
     ├── nginx.conf
     ├── package.json
     └── src/
         ├── App.jsx
         ├── api.js
-        └── components/         # Header, Toolbar, PaperTable, PaperCard,
-                                # PaperModal, SectionView, ChartsSection,
-                                # GlobalVisitorMap, GuestbookSection,
-                                # UpdateLogPanel, UpdateFaqPanel, WordCloudSection
+        └── components/
+            ├── Header.jsx          # 顶栏
+            ├── Toolbar.jsx         # 搜索与筛选
+            ├── PaperTable.jsx      # 表格视图
+            ├── PaperCard.jsx       # 卡片视图
+            ├── PaperModal.jsx      # 文献详情弹窗
+            ├── SectionView.jsx     # 分区视图
+            ├── StatCards.jsx       # 统计卡片
+            ├── ChartsSection.jsx   # 图表（词云、趋势）
+            ├── GlobalVisitorMap.jsx # 全球访客地图
+            ├── VisitorMap.jsx      # 访客地图弹窗
+            ├── GuestbookSection.jsx # 留言板
+            ├── UpdateLogPanel.jsx  # 更新日志面板
+            ├── UpdateFaqPanel.jsx  # 常见问题面板
+            └── DonateCard.jsx      # 赞助卡片
 ```
 
 ## 快速启动
 
 ### 1. 配置环境变量
 
-复制并编辑根目录 `.env` 文件，填写以下必填项：
+创建 `.env` 文件：
 
 ```bash
-# DeepSeek API
+# DeepSeek API（必填）
 DEEPSEEK_API_KEY=sk-xxxxxxxxxxxx
 
-# NCBI / PubMed（建议申请 API Key 以提高速率限制）
+# PubMed（必填）
 NCBI_EMAIL=your_email@example.com
 NCBI_API_KEY=your_ncbi_api_key
 
-# 手动更新接口的鉴权 Token
+# 手动更新接口鉴权（必填）
 APP_SECRET_TOKEN=your_random_secret
+
+# 抓取起始日期（选填，默认 2024-01-01）
+FETCH_START_DATE=2024-01-01
 ```
 
-### 2. Docker 一键启动
+### 2. 准备期刊分区数据
+
+将 `01fenqu.xlsx` 文件放入项目根目录（用于 JCR / 芯睿分区匹配）。
+
+### 3. Docker 启动
 
 ```bash
 docker-compose up --build -d
 ```
 
-- 前端：`http://localhost:3000`
-- 后端 API：`http://localhost:8000`
-- API 文档：`http://localhost:8000/docs`
+访问 `http://localhost:3000`
 
-### 3. 手动触发首次更新
-
-点击页面右上角「手动更新」，输入 `.env` 中设置的 `APP_SECRET_TOKEN`，即可立即抓取文献并生成中文摘要。
-
-## 主要功能
-
-- **手动触发抓取**：通过网页右上角按钮一键抓取 PubMed 新增文献
-- **定时自动更新**：支持配置定时任务，自动定期抓取最新文献
-- **智能去重**：基于 PMID / DOI 去重
-- **LLM 核心要点提取**：DeepSeek 自动生成中文摘要、方法、对象、创新点、结论
-- **全文检索**：支持题目、摘要、期刊、方法等多字段搜索
-- **多维筛选**：文献类型、JCR 分区、日期范围
-- **分区展示**：按 JCR 分区分组展示，快速识别高质量论文
-- **可视化图表**：词云、文献趋势图等多维度数据展示
-- **访客地图**：ECharts 世界地图展示全球访客分布
-- **留言板**：访客留言互动功能
-- **更新日志**：记录每次爬取的检索数、新增数、分析成功数与失败数
-- **响应式 UI**：蓝白学术风格，支持移动端
-
-## API 列表
+## API 接口
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
-| `GET /api/papers` | 查询 | 分页列表，支持 `q`, `page`, `article_type`, `jcr_quartile`, `date_from`, `date_to` |
-| `GET /api/papers/{id}` | 详情 | 单篇文献全部字段 |
-| `GET /api/stats` | 统计 | 总数、按月分布、分区分布等 |
-| `GET /api/logs` | 日志 | 爬取历史记录分页 |
-| `GET /api/visitors/stats` | 访客统计 | 总访客数、国家分布、地理坐标 |
-| `POST /api/update` | 更新 | 手动触发抓取，Header `Authorization: Bearer <token>` |
-| `POST /api/guestbook` | 留言 | 提交留言 |
-| `GET /api/guestbook` | 留言列表 | 获取留言列表 |
+| `GET /api/papers` | 文献列表 | 支持分页、搜索、筛选、排序 |
+| `GET /api/papers/{id}` | 文献详情 | |
+| `GET /api/stats` | 统计数据 | 总数、分区分布、期刊分布、月度趋势 |
+| `POST /api/update` | 触发更新 | 需 Authorization header |
+| `POST /api/enrich` | 补充分析 | 对缺少摘要的文献补分析 |
+| `GET /api/logs` | 更新日志 | |
+| `GET /api/visitors/stats` | 访客统计 | |
+| `POST /api/guestbook` | 提交留言 | |
+| `GET /api/guestbook` | 留言列表 | |
 
-## 技术栈
+## 开发模式
 
-- **后端**：Python 3.11, FastAPI, SQLAlchemy, Biopython, httpx, APScheduler
-- **前端**：React 18, Vite, Tailwind CSS, Lucide React, ECharts, react-wordcloud
-- **数据库**：SQLite（默认），可无缝切换至 PostgreSQL
-- **部署**：Docker, docker-compose, Nginx
-
-## 注意事项
-
-1. **API Key 安全**：`DEEPSEEK_API_KEY` 仅通过环境变量注入，代码中不硬编码任何密钥。
-2. **PubMed 速率限制**：未提供 NCBI API Key 时，请求间隔强制为 1 秒；提供 Key 后建议 0.34 秒间隔。
-3. **LLM 并发控制**：批量处理文献时，默认最多 5 条并行，避免触发 DeepSeek 速率限制。
-4. **JCR 分区**：当前版本通过期刊名称关键词进行启发式估算，精确数据可后续对接 JCR API 或 LetPub 数据库。
-
-## 重要提示
-
-文献的中文摘要及提取字段均由 AI 自动生成，可能存在错误或遗漏。所有结论请务必查阅原文核实，AI 提炼内容仅供参考，不可直接作为科研引用依据。
-
-## 开发模式启动
-
-如果不使用 Docker，也可以分别启动前后端：
-
-**后端**：
 ```bash
+# 后端
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
-```
 
-**前端**：
-```bash
+# 前端
 cd frontend
 npm install
 npm run dev
 ```
+
+## 注意事项
+
+1. 文献 AI 摘要仅供参考，请以原文为准
+2. PubMed API 建议配置 API Key 以提高速率限制
+3. JCR / 芯睿分区通过期刊名称关键词估算，精确数据需对接专业数据库
