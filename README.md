@@ -1,6 +1,6 @@
-# Resistome Paper Tracker
+# Resistome Literature Tracker
 
-**Resistome Paper Tracker** 是一个文献监测与展示平台，专注于耐药基因（Antibiotic Resistance Gene, ARG）领域的最新研究进展。
+**Resistome Literature Tracker** 是一个文献监测与展示平台，专注于耐药基因（Antibiotic Resistance Genes, ARGs）领域的最新研究进展。
 
 ## 数据来源
 
