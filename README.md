@@ -12,11 +12,12 @@
 resistome[Title/Abstract] OR resistomes[Title/Abstract] OR "antibiotics resistance gene"[Title/Abstract] OR "antibiotics resistance genes"[Title/Abstract]
 ```
 
-该策略匹配主题中包含 **resistome**、**resistomes**、**antibiotics resistance gene**、**antibiotics resistance genes** 的文献，确保全面覆盖耐药基因谱相关研究。
+文献数据源为 PubMed 官方数据库，检索策略覆盖resistome、antibiotic resistance gene、antimicrobial resistance gene 及其各类变体等相关关键词；
+目前收录了 2021 年 1 月 1 日起发表的论文，系统每日定时自动同步更新，保证前沿文献不遗漏。
 
 ## 文献加工与摘要生成
 
-每条文献在抓取后，通过 **DeepSeek 大模型** 自动提取以下中文字段，方便快速浏览：
+每条文献在抓取后，通过 ** DeepSeek‑v4‑flash ** 自动提取以下中文字段，方便快速浏览：
 
 - **中文摘要** — 核心要点提炼
 - **主要研究方法**
