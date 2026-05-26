@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, Header
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
 from datetime import datetime, timedelta
 from app.database import get_db
 from app.models import Guestbook
 from app import schemas
+from app.config import settings
 
 router = APIRouter(prefix="/api/guestbook", tags=["guestbook"])
 
@@ -62,3 +63,16 @@ def list_messages(
     total = query.count()
     items = query.offset((page - 1) * page_size).limit(page_size).all()
     return schemas.GuestbookListResponse(total=total, items=items)
+
+
+@router.delete("")
+def clear_messages(
+    authorization: str = Header(..., alias="Authorization"),
+    db: Session = Depends(get_db),
+):
+    expected = f"Bearer {settings.app_secret_token}"
+    if authorization != expected:
+        raise HTTPException(status_code=403, detail="Invalid token")
+    db.query(Guestbook).delete()
+    db.commit()
+    return {"deleted": True}

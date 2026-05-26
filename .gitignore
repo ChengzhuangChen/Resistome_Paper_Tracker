@@ -32,3 +32,6 @@ frontend/public/qrcode.png
 backend/data/*.db
 *.tar.gz
 *.zip
+
+# Local files
+onehealth.png

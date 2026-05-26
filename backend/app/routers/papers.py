@@ -1,4 +1,7 @@
+import csv
+import io
 from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_, case
 from typing import Optional, List
@@ -16,24 +19,19 @@ def _parse_comma_list(val: Optional[str]) -> List[str]:
     return [v.strip() for v in val.split(",") if v.strip()]
 
 
-@router.get("", response_model=schemas.PaperListResponse)
-def list_papers(
-    q: Optional[str] = Query(None, description="Full-text search"),
-    page: int = Query(1, ge=1),
-    page_size: int = Query(5, ge=1, le=1000),
-    sort_by: str = Query("-publication_date", description="Sort field, prefix - for desc"),
-    article_type: Optional[str] = Query(None, description="Comma-separated article types"),
-    jcr_quartile: Optional[str] = Query(None),
-    subject_category: Optional[str] = Query(None, description="Comma-separated subject categories"),
-    is_top: Optional[bool] = Query(None),
-    is_cns: Optional[bool] = Query(None),
-    if_min: Optional[float] = Query(None, ge=0),
-    date_from: Optional[date] = Query(None),
-    date_to: Optional[date] = Query(None),
-    db: Session = Depends(get_db),
+def _apply_filters(
+    query,
+    db: Session,
+    q: Optional[str] = None,
+    article_type: Optional[str] = None,
+    jcr_quartile: Optional[str] = None,
+    subject_category: Optional[str] = None,
+    is_top: Optional[bool] = None,
+    is_cns: Optional[bool] = None,
+    if_min: Optional[float] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
 ):
-    query = db.query(Paper)
-
     if q:
         search = f"%{q}%"
         query = query.filter(
@@ -71,6 +69,30 @@ def list_papers(
     if date_to:
         query = query.filter(Paper.publication_date <= date_to)
 
+    return query
+
+
+@router.get("", response_model=schemas.PaperListResponse)
+def list_papers(
+    q: Optional[str] = Query(None, description="Full-text search"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(5, ge=1, le=1000),
+    sort_by: str = Query("-publication_date", description="Sort field, prefix - for desc"),
+    article_type: Optional[str] = Query(None, description="Comma-separated article types"),
+    jcr_quartile: Optional[str] = Query(None),
+    subject_category: Optional[str] = Query(None, description="Comma-separated subject categories"),
+    is_top: Optional[bool] = Query(None),
+    is_cns: Optional[bool] = Query(None),
+    if_min: Optional[float] = Query(None, ge=0),
+    date_from: Optional[date] = Query(None),
+    date_to: Optional[date] = Query(None),
+    db: Session = Depends(get_db),
+):
+    query = _apply_filters(
+        db.query(Paper), db, q, article_type, jcr_quartile,
+        subject_category, is_top, is_cns, if_min, date_from, date_to,
+    )
+
     # Sorting
     sort_field = sort_by.lstrip("-")
     sort_desc = sort_by.startswith("-")
@@ -103,6 +125,64 @@ def list_papers(
     items = query.offset((page - 1) * page_size).limit(page_size).all()
 
     return schemas.PaperListResponse(total=total, items=items)
+
+
+@router.get("/export")
+def export_papers(
+    q: Optional[str] = Query(None, description="Full-text search"),
+    article_type: Optional[str] = Query(None, description="Comma-separated article types"),
+    jcr_quartile: Optional[str] = Query(None),
+    subject_category: Optional[str] = Query(None, description="Comma-separated subject categories"),
+    is_top: Optional[bool] = Query(None),
+    is_cns: Optional[bool] = Query(None),
+    if_min: Optional[float] = Query(None, ge=0),
+    date_from: Optional[date] = Query(None),
+    date_to: Optional[date] = Query(None),
+    db: Session = Depends(get_db),
+):
+    query = _apply_filters(
+        db.query(Paper), db, q, article_type, jcr_quartile,
+        subject_category, is_top, is_cns, if_min, date_from, date_to,
+    )
+    query = query.order_by(Paper.publication_date.desc())
+    items = query.all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "发表日期", "文献类型", "题目", "期刊名", "通讯作者",
+        "IF", "JCR分区", "新锐分区", "Top",
+        "中文摘要", "研究方法", "创新点", "结论", "样本来源", "学科分类",
+    ])
+
+    for p in items:
+        writer.writerow([
+            p.publication_date.strftime("%Y-%m-%d") if p.publication_date else "",
+            p.article_type or "",
+            p.title or "",
+            p.journal or "",
+            p.corresponding_author or "",
+            p.if_ if p.if_ is not None else "",
+            p.jcr_quartile or "",
+            p.xinrui_quartile or "",
+            "是" if p.is_top else "否",
+            p.abstract_cn or "",
+            p.methods or "",
+            p.highlights or "",
+            p.conclusion or "",
+            p.sample_source or "",
+            p.subject_category or "",
+        ])
+
+    output.seek(0)
+    today = date.today().strftime("%Y-%m-%d")
+    filename = f"resistome_{today}.csv"
+
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode("utf-8-sig")),
+        media_type="text/csv; charset=utf-8-sig",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
 
 
 @router.get("/{paper_id}", response_model=schemas.PaperResponse)

@@ -66,7 +66,7 @@ class EmailSender:
         self.user = settings.smtp_user
         self.password = settings.smtp_password
         self.sender = settings.smtp_from
-        self.recipients = [e.strip() for e in settings.notify_email_list.split(",") if e.strip()]
+        self.recipients = [e.strip() for e in (settings.notify_email_list or "").split(",") if e.strip()]
 
     async def send_daily_digest(self, papers: List[dict], date_str: str) -> bool:
         if not papers or not self.recipients:

@@ -133,19 +133,20 @@ async def on_startup():
     finally:
         db.close()
 
-    # Start daily scheduler (02:00 UTC = 10:00 Beijing)
+    # Start daily scheduler (02:00 Beijing)
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
     from apscheduler.triggers.cron import CronTrigger
     from app.scheduler import scheduled_update
-    scheduler = AsyncIOScheduler()
+    scheduler = AsyncIOScheduler(timezone='Asia/Shanghai')
     scheduler.add_job(scheduled_update, CronTrigger(hour=2, minute=0))
     scheduler.start()
-    print("[Startup] Scheduler started. Daily update at 02:00 UTC (10:00 Beijing).")
+    print("[Startup] Scheduler started. Daily update at 02:00 Beijing.")
 
 
 app.include_router(papers.router)
 app.include_router(stats.router)
 app.include_router(update.router)
+app.include_router(update.enrich_router)
 app.include_router(logs.router)
 app.include_router(logs.update_logs_router)
 app.include_router(visitors.router)

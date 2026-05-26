@@ -26,13 +26,13 @@ class Settings(BaseSettings):
     # App
     app_secret_token: str
     database_url: str = "sqlite:///./data/arg_tracker.db"
-    fetch_start_date: date = date(2024, 1, 1)
+    fetch_start_date: date = date(2021, 1, 1)
     fetch_days: int = 7
     max_papers_per_batch: int = 50
     llm_max_concurrent: int = 5
     llm_retry_attempts: int = 5
     llm_base_delay: float = 3.0  # seconds, base backoff for 429
-    llm_batch_interval: float = 1.5  # seconds between batches
+    llm_batch_interval: float = 1.5  # seconds between batches (deprecated, kept for compat)
 
     class Config:
         env_file = str(ENV_PATH) if ENV_PATH.exists() else None

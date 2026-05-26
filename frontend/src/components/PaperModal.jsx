@@ -13,7 +13,7 @@ const QUARTILE_STYLES = {
 function Badge({ children, bg, text, border }) {
   return (
     <span
-      className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold border"
+      className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-semibold border"
       style={{ background: bg, color: text, borderColor: border || bg }}
     >
       {children}
@@ -25,7 +25,7 @@ function Section({ label, value, icon: Icon }) {
   if (!value) return null
   return (
     <div>
-      <div className="flex items-center gap-1.5 text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>
+      <div className="flex items-center gap-1.5 text-xs font-bold mb-2 tracking-wide" style={{ color: '#64748b' }}>
         <Icon className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} />
         {label}
       </div>
@@ -52,24 +52,24 @@ export default function PaperModal({ paper, onClose }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,.45)', backdropFilter: 'blur(4px)' }}
+      style={{ background: 'rgba(15,23,42,.35)', backdropFilter: 'blur(6px)' }}
       onClick={onClose}
     >
       <div
-        className="rounded-xl shadow-2xl w-full sm:max-w-2xl sm:max-h-[88vh] max-h-[100dvh] overflow-y-auto"
-        style={{ background: 'var(--surface)', width: '100%' }}
+        className="rounded-2xl shadow-2xl w-full sm:max-w-2xl sm:max-h-[88vh] max-h-[100dvh] overflow-y-auto"
+        style={{ background: '#fff', boxShadow: '0 24px 48px rgba(0,0,0,0.12)', width: '100%' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div
-          className="sticky top-0 z-10 flex items-start justify-between gap-4 px-4 sm:px-6 py-4 sm:py-5"
-          style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
+          className="sticky top-0 z-10 flex items-start justify-between gap-4 px-5 sm:px-6 py-4 sm:py-5"
+          style={{ background: '#fff', borderBottom: '1px solid #f1f5f9' }}
         >
           <div className="min-w-0">
-            <h2 className="text-lg font-bold leading-snug pr-4" style={{ color: 'var(--text)' }}>{paper.title}</h2>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+            <h2 className="text-lg font-bold leading-snug pr-4 tracking-tight" style={{ color: '#111827' }}>{paper.title}</h2>
+            <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs">
               {paper.journal && (
-                <span className="font-medium" style={{ color: 'var(--muted)' }}>{paper.journal}</span>
+                <span className="font-semibold" style={{ color: '#6b7280' }}>{paper.journal}</span>
               )}
               <Badge bg={qStyle.bg} text={qStyle.text}>
                 JCR {qStyle.label}
@@ -101,14 +101,14 @@ export default function PaperModal({ paper, onClose }) {
               )}
               {paper.subject_category && (
                 <span
-                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium"
+                  className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-medium"
                   style={{ background: subjectStyle.bg, color: subjectStyle.text }}
                 >
                   {paper.subject_category}
                 </span>
               )}
               {paper.publication_date && (
-                <span className="flex items-center gap-1" style={{ color: 'var(--muted)' }}>
+                <span className="flex items-center gap-1 font-medium" style={{ color: '#9ca3af' }}>
                   <Calendar className="w-3 h-3" />
                   {paper.publication_date}
                 </span>
@@ -117,51 +117,49 @@ export default function PaperModal({ paper, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md shrink-0 transition-colors"
+            className="p-1.5 rounded-xl shrink-0 transition-all duration-200 hover:bg-slate-100"
             style={{ color: '#9ca3af' }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#f3f4f6')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Meta info row */}
-        <div className="px-4 sm:px-6 pt-4">
+        <div className="px-5 sm:px-6 pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             {paper.corresponding_author && (
               <div className="flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--accent)' }} />
-                <span style={{ color: 'var(--muted)' }}>通讯作者：</span>
-                <span style={{ color: 'var(--text)' }}>{paper.corresponding_author}</span>
+                <span style={{ color: '#9ca3af' }}>通讯作者：</span>
+                <span className="font-medium" style={{ color: '#374151' }}>{paper.corresponding_author}</span>
               </div>
             )}
             {paper.first_affiliation && (
-              <div className="flex items-start gap-1.5">
-                <Building2 className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} />
-                <span style={{ color: 'var(--muted)' }}>第一单位：</span>
-                <span className="break-all" style={{ color: 'var(--text)' }}>{paper.first_affiliation}</span>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Building2 className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--accent)' }} />
+                <span className="shrink-0" style={{ color: '#9ca3af', whiteSpace: 'nowrap' }}>第一单位：</span>
+                <span className="font-medium truncate" title={paper.first_affiliation} style={{ color: '#374151', minWidth: 0 }}>{paper.first_affiliation}</span>
               </div>
             )}
             {paper.sample_source && paper.sample_source !== '未提及' && (
               <div className="flex items-center gap-1.5">
                 <TestTube className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--accent)' }} />
-                <span style={{ color: 'var(--muted)' }}>样本来源：</span>
-                <span style={{ color: 'var(--text)' }}>{paper.sample_source}</span>
+                <span style={{ color: '#9ca3af' }}>样本来源：</span>
+                <span className="font-medium" style={{ color: '#374151' }}>{paper.sample_source}</span>
               </div>
             )}
             {paper.methods && (
               <div className="flex items-center gap-1.5">
                 <FlaskConical className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--accent)' }} />
-                <span style={{ color: 'var(--muted)' }}>研究方法：</span>
-                <span style={{ color: 'var(--text)' }}>{paper.methods}</span>
+                <span style={{ color: '#9ca3af' }}>研究方法：</span>
+                <span className="font-medium" style={{ color: '#374151' }}>{paper.methods}</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Body */}
-        <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
+        <div className="px-5 sm:px-6 py-5 sm:py-6 space-y-5 sm:space-y-6">
           {paper.abstract_en && (
             <Section label="英文摘要（原文）" value={paper.abstract_en} icon={FileText} />
           )}
@@ -177,7 +175,7 @@ export default function PaperModal({ paper, onClose }) {
                 href={`https://doi.org/${paper.doi}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
+                className="inline-flex items-center gap-1 text-sm font-semibold hover:underline transition-colors"
                 style={{ color: 'var(--accent)' }}
               >
                 <ExternalLink className="w-4 h-4" />
@@ -189,7 +187,7 @@ export default function PaperModal({ paper, onClose }) {
                 href={`https://pubmed.ncbi.nlm.nih.gov/${paper.pmid}/`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
+                className="inline-flex items-center gap-1 text-sm font-semibold hover:underline transition-colors"
                 style={{ color: 'var(--accent)' }}
               >
                 <ExternalLink className="w-4 h-4" />

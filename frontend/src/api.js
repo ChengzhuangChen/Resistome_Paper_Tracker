@@ -28,4 +28,12 @@ export const fetchKeywords = (params) => api.get('/keywords', { params })
 export const postGuestbook = (payload) => api.post('/guestbook', payload)
 export const fetchGuestbook = (params) => api.get('/guestbook', { params })
 
+export const buildExportUrl = (params) => {
+  const clean = Object.fromEntries(
+    Object.entries(params).filter(([_, v]) => v !== '' && v !== undefined && v !== null)
+  )
+  const qs = new URLSearchParams(clean).toString()
+  return `/api/papers/export${qs ? '?' + qs : ''}`
+}
+
 export default api

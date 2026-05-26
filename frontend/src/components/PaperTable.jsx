@@ -36,14 +36,14 @@ export default function PaperTable({ papers, loading, sortBy, onSortChange, high
     { key: 'abstract', label: '中文摘要', width: 110 },
     { key: 'methods', label: '研究方法', width: 75 },
     { key: 'highlights', label: '主要创新点', width: 95 },
-    { key: 'conclusion', label: '结论', width: 95 },
+    { key: 'conclusion', label: '主要结论', width: 95 },
     { key: 'sample', label: '样本来源', width: 75 },
     { key: 'category', label: '学科分类', width: 68 },
   ]
 
   const getSortIcon = (colKey) => {
     const current = SORT_MAP[sortBy]
-    if (!current || current.col !== colKey) return <ArrowUpDown className="w-3 h-3 opacity-50" />
+    if (!current || current.col !== colKey) return <ArrowUpDown className="w-3 h-3 opacity-40" />
     return current.dir === 'desc'
       ? <ArrowDown className="w-3 h-3" style={{ color: 'var(--accent)' }} />
       : <ArrowUp className="w-3 h-3" style={{ color: 'var(--accent)' }} />
@@ -65,7 +65,7 @@ export default function PaperTable({ papers, loading, sortBy, onSortChange, high
   const renderQuartile = (q) => {
     const style = JCR_COLORS[q] || { bg: '#f3f4f6', text: '#9ca3af', label: q || 'NA' }
     return (
-      <span className="inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold" style={{ background: style.bg, color: style.text }}>
+      <span className="inline-block px-1.5 py-0.5 rounded-md text-[11px] font-semibold" style={{ background: style.bg, color: style.text }}>
         {style.label}
       </span>
     )
@@ -78,20 +78,17 @@ export default function PaperTable({ papers, loading, sortBy, onSortChange, high
 
   const formatMethod = (methods) => {
     if (!methods) return '—'
-    const lower = methods.toLowerCase()
-    if (lower.includes('metagenom') || lower.includes('宏基因组')) return '宏基因组学'
-    if (lower.includes('pcr')) return 'PCR'
     return truncate(methods, 22)
   }
 
   if (loading) {
     return (
-      <div className="mt-2">
-        <table className="w-full table-fixed border rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)', boxShadow: 'var(--shadow)' }}>
-          <thead>
-            <tr style={{ background: '#f3f4f6', borderBottom: '2px solid var(--border)' }}>
+      <div className="mt-2 overflow-x-auto rounded-2xl border" style={{ borderColor: 'var(--border)', boxShadow: 'var(--shadow-md)' }}>
+        <table className="w-full table-fixed" style={{ background: 'var(--surface)' }}>
+          <thead className="sticky top-0 z-10">
+            <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid var(--border)' }}>
               {columns.map((c) => (
-                <th key={c.key} className="px-2 py-2 text-left text-sm font-bold" style={{ color: '#374151', width: c.width }}>
+                <th key={c.key} className="px-2 py-2.5 text-left text-[11px] font-semibold tracking-wide uppercase" style={{ color: '#1f2937', width: c.width }}>
                   {c.label}
                 </th>
               ))}
@@ -102,7 +99,7 @@ export default function PaperTable({ papers, loading, sortBy, onSortChange, high
               <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
                 {columns.map((c, j) => (
                   <td key={j} className="px-2 py-2.5">
-                    <div className="h-3 rounded" style={{ background: j % 2 === 0 ? '#e5e7eb' : '#f3f4f6', width: j === 1 ? '80%' : j === 5 ? '90%' : '60%', animation: 'skeleton-pulse 1.6s infinite' }} />
+                    <div className="h-2.5 rounded-md" style={{ background: j % 2 === 0 ? '#e2e8f0' : '#f1f5f9', width: j === 1 ? '80%' : j === 5 ? '90%' : '60%', animation: 'skeleton-pulse 1.6s infinite' }} />
                   </td>
                 ))}
               </tr>
@@ -114,18 +111,18 @@ export default function PaperTable({ papers, loading, sortBy, onSortChange, high
   }
 
   return (
-    <div className="mt-2">
-      <table className="w-full table-fixed border rounded-lg overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)', boxShadow: 'var(--shadow)' }}>
-        <thead>
-          <tr style={{ background: '#f3f4f6', borderBottom: '2px solid var(--border)' }}>
+    <div className="mt-2 overflow-x-auto rounded-2xl border" style={{ borderColor: 'var(--border)', boxShadow: 'var(--shadow-md)' }}>
+      <table className="w-full table-fixed" style={{ background: 'var(--surface)' }}>
+        <thead className="sticky top-0 z-10">
+          <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid var(--border)' }}>
             {columns.map((c) => (
               <th
                 key={c.key}
-                className="px-2 py-2 text-left text-sm font-bold cursor-pointer select-none whitespace-nowrap hover:text-blue-600 transition-colors"
-                style={{ color: '#374151', width: c.width }}
+                className={`px-2 py-2.5 ${c.key === 'title' ? 'text-center' : 'text-left'} text-[11px] font-semibold tracking-wide uppercase cursor-pointer select-none whitespace-nowrap transition-colors duration-150 hover:text-blue-600`}
+                style={{ color: '#1f2937', width: c.width }}
                 onClick={() => ['date', 'type', 'title', 'if', 'jcr', 'xinrui'].includes(c.key) && handleSort(c.key)}
               >
-                <span className="flex items-center gap-1">
+                <span className={`flex items-center gap-1 ${c.key === 'title' ? 'justify-center' : ''}`}>
                   {c.label}
                   {['date', 'type', 'title', 'if', 'jcr', 'xinrui'].includes(c.key) && getSortIcon(c.key)}
                 </span>
@@ -140,21 +137,21 @@ export default function PaperTable({ papers, loading, sortBy, onSortChange, high
             return (
               <tr
                 key={p.id}
-                className={`${cls} cursor-pointer transition-colors`}
+                className={`${cls} cursor-pointer transition-colors duration-150 hover:bg-blue-50/60`}
                 style={{ borderBottom: '1px solid var(--border)' }}
                 onClick={() => onRowClick(p)}
               >
-                <td className="px-2 py-2 text-[11px] whitespace-nowrap" style={{ color: 'var(--muted)' }}>
+                <td className="px-2 py-2 text-[11px] whitespace-nowrap" style={{ color: '#1e3a8a' }}>
                   {p.publication_date || '—'}
                 </td>
-                <td className="px-2 py-2 text-[11px]" style={{ color: 'var(--muted)' }}>
+                <td className="px-2 py-2 text-[11px]" style={{ color: '#1e3a8a' }}>
                   {p.article_type || '—'}
                 </td>
-                <td className="px-2 py-2 text-[13px] font-semibold leading-snug" style={{ color: 'var(--text)' }}>
+                <td className="px-2 py-2 text-[13px] font-semibold leading-snug text-center" style={{ color: 'var(--text)', wordBreak: 'break-word' }}>
                   {highlightText(p.title)}
                   {p.is_cns && <span className="text-red-500 font-bold ml-1">*</span>}
                 </td>
-                <td className="px-2 py-2 text-[11px]" style={{ color: 'var(--muted)' }}>
+                <td className="px-2 py-2 text-[11px]" style={{ color: '#1e3a8a' }}>
                   {p.journal || '—'}
                   {p.is_cns && (
                     <span
@@ -165,7 +162,7 @@ export default function PaperTable({ papers, loading, sortBy, onSortChange, high
                     </span>
                   )}
                 </td>
-                <td className="px-2 py-2 text-[11px]" style={{ color: 'var(--muted)' }}>
+                <td className="px-2 py-2 text-[11px]" style={{ color: '#1e3a8a' }}>
                   {p.corresponding_author || '—'}
                 </td>
                 <td className="px-2 py-2 text-[11px] font-semibold" style={{ color: '#d97706' }}>
@@ -176,36 +173,71 @@ export default function PaperTable({ papers, loading, sortBy, onSortChange, high
                 </td>
                 <td className="px-2 py-2 text-[11px]">
                   {p.xinrui_quartile ? (
-                    <span className="inline-block px-1 py-0.5 rounded text-[10px] font-semibold" style={{ background: '#f0f9ff', color: '#0369a1' }}>
+                    <span className="inline-block px-1.5 py-0.5 rounded-md text-[10px] font-semibold" style={{ background: '#f0f9ff', color: '#0369a1' }}>
                       {p.xinrui_quartile}区
                     </span>
                   ) : '—'}
                 </td>
                 <td className="px-2 py-2 text-[11px]">
                   {p.is_top ? (
-                    <span className="inline-block px-1 py-0.5 rounded text-[10px] font-bold" style={{ background: '#fef3c7', color: '#b45309' }}>
+                    <span className="inline-block px-1.5 py-0.5 rounded-md text-[10px] font-bold" style={{ background: '#fef3c7', color: '#b45309' }}>
                       Top
                     </span>
                   ) : '—'}
                 </td>
-                <td className="px-2 py-2 text-[11px] leading-relaxed" style={{ color: 'var(--text)' }}>
-                  {highlightText(truncate(p.abstract_cn, 70))}
+                <td className="px-2 py-2 text-[11px] leading-relaxed relative" style={{ color: '#374151' }}>
+                  <div className="group relative">
+                    {p.abstract_cn ? (
+                      <>
+                        <div className="line-clamp-5">
+                          {highlightText(p.abstract_cn)}
+                        </div>
+                        <div
+                          className="hidden group-hover:block absolute z-50 left-1/2 -translate-x-1/2 top-full mt-1.5 text-xs rounded-xl shadow-2xl pointer-events-none"
+                          style={{
+                            maxWidth: 450,
+                            minWidth: 320,
+                            maxHeight: 200,
+                            overflowY: 'auto',
+                            padding: '8px 12px',
+                            writingMode: 'horizontal-tb',
+                            background: '#fff',
+                            color: '#374151',
+                            border: '1px solid #e5e7eb',
+                            lineHeight: 1.6,
+                            textAlign: 'left',
+                          }}
+                        >
+                          <div
+                            style={{
+                              whiteSpace: 'normal',
+                              wordBreak: 'keep-all',
+                              overflowWrap: 'break-word',
+                            }}
+                          >
+                            {p.abstract_cn.length > 150 ? p.abstract_cn.slice(0, 150) + '…' : p.abstract_cn}
+                          </div>
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-[6px] border-transparent" style={{ borderBottomColor: '#fff' }} />
+                        </div>
+                      </>
+                    ) : '—'}
+                  </div>
                 </td>
-                <td className="px-2 py-2 text-[11px]" style={{ color: 'var(--muted)' }}>
+                <td className="px-2 py-2 text-[11px]" style={{ color: '#9ca3af' }}>
                   {formatMethod(p.methods)}
                 </td>
-                <td className="px-2 py-2 text-[11px] leading-relaxed" style={{ color: 'var(--text)' }}>
-                  {highlightText(truncate(p.highlights, 50))}
+                <td className="px-2 py-2 text-[11px] leading-relaxed" style={{ color: '#374151', wordBreak: 'break-word' }}>
+                  {highlightText(p.highlights) || '—'}
                 </td>
-                <td className="px-2 py-2 text-[11px] leading-relaxed" style={{ color: 'var(--text)' }}>
-                  {highlightText(truncate(p.conclusion, 50))}
+                <td className="px-2 py-2 text-[11px] leading-relaxed" style={{ color: '#374151', wordBreak: 'break-word' }}>
+                  {highlightText(p.conclusion) || '—'}
                 </td>
-                <td className="px-2 py-2 text-[11px]" style={{ color: 'var(--muted)' }}>
+                <td className="px-2 py-2 text-[11px] leading-relaxed" style={{ color: '#9ca3af', wordBreak: 'break-word' }}>
                   {p.sample_source || '—'}
                 </td>
                 <td className="px-2 py-2 text-[11px]">
                   {p.subject_category ? (
-                    <span className="inline-block px-1 py-0.5 rounded text-[10px] font-medium" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+                    <span className="inline-block px-1.5 py-0.5 rounded-md text-[10px] font-medium" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
                       {p.subject_category}
                     </span>
                   ) : '—'}
@@ -215,7 +247,7 @@ export default function PaperTable({ papers, loading, sortBy, onSortChange, high
           })}
           {papers.length === 0 && (
             <tr>
-              <td colSpan={columns.length} className="px-2 py-16 text-center text-sm" style={{ color: 'var(--muted)' }}>
+              <td colSpan={columns.length} className="px-2 py-16 text-center text-sm" style={{ color: '#9ca3af' }}>
                 暂无文献，请尝试调整筛选条件或触发更新
               </td>
             </tr>

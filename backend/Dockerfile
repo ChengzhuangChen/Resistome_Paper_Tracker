@@ -1,5 +1,7 @@
 FROM python:3.11-slim
 
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
+
 WORKDIR /app
 
 # 配置 pip 使用腾讯云镜像源（加速下载）

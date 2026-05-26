@@ -86,6 +86,11 @@ class UpdateLogResponse(BaseModel):
     status: str
     error_msg: Optional[str] = None
 
+    @field_serializer('triggered_at')
+    def serialize_triggered_at(self, dt: datetime) -> str:
+        beijing = timezone(timedelta(hours=8))
+        return dt.replace(tzinfo=timezone.utc).astimezone(beijing).isoformat()
+
     class Config:
         from_attributes = True
 

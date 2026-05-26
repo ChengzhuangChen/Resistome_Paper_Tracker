@@ -125,7 +125,11 @@ _CNS_JOURNALS = frozenset({
     "cell reports", "cell reports medicine", "cell reports methods",
     "cell reports physical science", "cell reports sustainability",
     # --- 其他 Cell Press 刊 ---
-    "iscience", "patterns", "structure",
+    "patterns", "structure",
+    # --- Nature Cities ---
+    "nature cities",
+    # --- ISME ---
+    "the isme journal",
 })
 
 # Additional safe prefix patterns (series that are unambiguous)
@@ -157,27 +161,46 @@ def is_cns_journal(journal_name: str) -> bool:
     return False
 
 
+def _safe_str(val) -> str:
+    """Coerce Bio.Entrez StringElement / None to plain str."""
+    if val is None:
+        return ""
+    s = str(val).strip()
+    return s
+
+
 def extract_corresponding_author(author_list):
-    """Extract corresponding author name and first affiliation from PubMed AuthorList."""
+    """Extract corresponding author name and first affiliation from PubMed AuthorList.
+
+    Strategy:
+    1. Look for an author whose affiliation contains "electronic address:" — PubMed sometimes
+       marks the corresponding author this way.
+    2. Fallback: use the last author (academic convention for corresponding author).
+    """
     if not author_list:
+        return None, None
+
+    # Bio.Entrez may return a single dict when the list has exactly one item
+    if isinstance(author_list, dict):
+        author_list = [author_list]
+    if not isinstance(author_list, list):
         return None, None
 
     authors = []
     electronic_idx = None
 
-    for idx, author in enumerate(author_list):
+    for author in author_list:
         if not isinstance(author, dict):
             continue
         authors.append(author)
-        # Check for electronic address hint in affiliation
         aff_infos = author.get("AffiliationInfo", [])
         if not isinstance(aff_infos, list):
-            aff_infos = [aff_infos]
+            aff_infos = [aff_infos] if aff_infos else []
         for aff_info in aff_infos:
             if isinstance(aff_info, dict):
-                aff_text = str(aff_info.get("Affiliation", ""))
+                aff_text = _safe_str(aff_info.get("Affiliation"))
                 if "electronic address:" in aff_text.lower():
-                    electronic_idx = idx
+                    electronic_idx = len(authors) - 1
                     break
         if electronic_idx is not None:
             break
@@ -185,41 +208,45 @@ def extract_corresponding_author(author_list):
     if not authors:
         return None, None
 
-    # Priority: ① ValidYN="Y" (all authors usually have it, so skip as primary cue)
-    # ② Electronic address hint
-    # ③ Last author
-    target = None
-    if electronic_idx is not None:
-        target = authors[electronic_idx]
-    else:
-        target = authors[-1]
+    target = authors[electronic_idx] if electronic_idx is not None else authors[-1]
 
-    # Build name
-    last_name = target.get("LastName", "")
-    fore_name = target.get("ForeName", "")
-    collective = target.get("CollectiveName", "")
-    name = f"{fore_name} {last_name}".strip() if fore_name or last_name else collective
+    # Build name with explicit coercion and fallback chain
+    last_name = _safe_str(target.get("LastName"))
+    fore_name = _safe_str(target.get("ForeName"))
+    initials = _safe_str(target.get("Initials"))
+    collective = _safe_str(target.get("CollectiveName"))
+
+    name = ""
+    if fore_name or last_name:
+        name = f"{fore_name} {last_name}".strip()
+    elif collective:
+        name = collective
+    elif initials:
+        name = f"{last_name} {initials}".strip() if last_name else initials
 
     # Build affiliation
     aff_infos = target.get("AffiliationInfo", [])
     if not isinstance(aff_infos, list):
-        aff_infos = [aff_infos]
+        aff_infos = [aff_infos] if aff_infos else []
     affiliation = ""
     for aff_info in aff_infos:
         if isinstance(aff_info, dict):
-            affiliation = str(aff_info.get("Affiliation", ""))
-            break
+            raw_aff = _safe_str(aff_info.get("Affiliation"))
+            if raw_aff:
+                affiliation = raw_aff
+                break
 
     # First semicolon-separated segment, remove email
     if affiliation:
         segment = affiliation.split(";")[0].strip()
-        # Remove email patterns
         segment = re.sub(r"\S+@\S+", "", segment)
         segment = re.sub(r"Electronic address:\s*", "", segment, flags=re.IGNORECASE)
         segment = re.sub(r"\s+", " ", segment).strip(",; ")
         affiliation = segment
 
-    return clean_text(name) if name else None, clean_text(affiliation) if affiliation else None
+    cleaned_name = clean_text(name)
+    cleaned_aff = clean_text(affiliation)
+    return cleaned_name or None, cleaned_aff or None
 
 
 def clean_text(text: str) -> str:
@@ -245,7 +272,7 @@ def extract_issn(journal_info):
 
 class PubMedFetcher:
     def __init__(self):
-        self.query = 'resistome[Title/Abstract] OR resistomes[Title/Abstract] OR "antibiotics resistance gene"[Title/Abstract] OR "antibiotics resistance genes"[Title/Abstract]'
+        self.query = '(resistome OR resistomes OR "antibiotic resistome" OR "antibiotic resistance gene" OR "antibiotic resistance genes" OR "antibiotics resistance gene" OR "antibiotics resistance genes" OR "antimicrobial resistance gene" OR "antimicrobial resistance genes" OR "antibiotic resistant gene" OR "antibiotic resistant genes" OR "AMR gene" OR "AMR genes" OR "ARGs")'
         self.batch_size = 200
         self.delay = 0.34 if Entrez.api_key else 1.0  # NCBI rate limit
 
@@ -343,7 +370,7 @@ class PubMedFetcher:
 
     def fetch_historical(self, start_date: date, end_date: date) -> List[Dict]:
         """Fetch all historical papers from PubMed using NCBI History Server."""
-        term = 'resistome* OR "antibiotics resistance gene*"'
+        term = '(resistome OR resistomes OR "antibiotic resistome" OR "antibiotic resistance gene" OR "antibiotic resistance genes" OR "antibiotics resistance gene" OR "antibiotics resistance genes" OR "antimicrobial resistance gene" OR "antimicrobial resistance genes" OR "antibiotic resistant gene" OR "antibiotic resistant genes" OR "AMR gene" OR "AMR genes" OR "ARGs")'
         mindate = start_date.strftime("%Y/%m/%d")
         maxdate = end_date.strftime("%Y/%m/%d")
 
@@ -474,6 +501,45 @@ class PubMedFetcher:
                 time.sleep(0.15)
 
         return papers
+
+    def fetch_missing_papers_by_term(self, db, start_date: str = '2021/01/01') -> int:
+        """One-time backfill: search PubMed from start_date to today with current query,
+        skip PMIDs already in DB, insert missing papers, return count added.
+        """
+        from app.models import Paper
+
+        start_dt = datetime.strptime(start_date, "%Y/%m/%d").date()
+        end_dt = datetime.utcnow().date()
+
+        existing = {p[0] for p in db.query(Paper.pmid).filter(Paper.pmid.isnot(None)).all()}
+
+        all_papers = self.fetch_historical(start_dt, end_dt)
+        missing = [p for p in all_papers if p.get("pmid") not in existing]
+
+        added = 0
+        for p in missing:
+            paper = Paper(
+                pmid=p.get("pmid"),
+                doi=p.get("doi"),
+                title=p.get("title", ""),
+                abstract_en=p.get("abstract", ""),
+                journal=p.get("journal", ""),
+                publication_date=p.get("publication_date"),
+                article_type=p.get("article_type", ""),
+                jcr_quartile=p.get("jcr_quartile"),
+                xinrui_quartile=p.get("xinrui_quartile"),
+                if_=p.get("if"),
+                is_top=p.get("is_top", False),
+                is_cns=p.get("is_cns", False),
+                corresponding_author=p.get("corresponding_author"),
+                first_affiliation=p.get("first_affiliation"),
+            )
+            db.add(paper)
+            added += 1
+
+        if added:
+            db.commit()
+        return added
 
     @staticmethod
     def _parse_date(article: Dict) -> Optional[date]:

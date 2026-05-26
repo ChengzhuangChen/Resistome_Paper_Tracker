@@ -25,9 +25,6 @@ function truncate(str, maxLen) {
 
 function formatMethod(methods) {
   if (!methods) return ''
-  const lower = methods.toLowerCase()
-  if (lower.includes('metagenom') || lower.includes('宏基因组')) return '宏基因组学'
-  if (lower.includes('pcr')) return 'PCR'
   return methods
 }
 

@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     volumes:
-      - arg_data:/app/data
+      - ./backend/data:/app/data
       - ./01fenqu.xlsx:/app/data/01fenqu.xlsx:ro
     restart: unless-stopped
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000

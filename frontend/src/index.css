@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --bg:       #f6f7f9;
+  --bg:       #f4f6f8;
   --surface:  #ffffff;
-  --border:   #e4e6eb;
-  --text:     #1a1d23;
+  --border:   #e8eaef;
+  --text:     #111827;
   --muted:    #6b7280;
   --accent:   #2563eb;
   --accent-l: #eff6ff;
@@ -17,9 +17,13 @@
   --yellow-l: #fef3c7;
   --red:      #dc2626;
   --red-l:    #fee2e2;
-  --radius:   8px;
-  --shadow:   0 1px 3px rgba(0,0,0,.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  --radius:   12px;
+  --radius-lg: 16px;
+  --radius-sm: 10px;
+  --shadow:   0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.05), 0 2px 6px rgba(0,0,0,0.03);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
@@ -30,6 +34,7 @@ body {
   font-size: 14px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a { color: var(--accent); text-decoration: none; }
@@ -53,7 +58,7 @@ a:hover { text-decoration: underline; }
 }
 
 .search-hl {
-  background: #fef08a;
+  background: linear-gradient(180deg, transparent 60%, #fef08a 60%);
   border-radius: 2px;
   padding: 0 1px;
 }

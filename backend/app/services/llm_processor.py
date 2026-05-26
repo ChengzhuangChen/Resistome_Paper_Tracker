@@ -125,7 +125,8 @@ class LLMProcessor:
         return "\n".join(lines)
 
     async def analyze_paper(self, title: str, abstract: str, skip_fields: Optional[set] = None) -> dict:
-        prompt = self._build_prompt(title, abstract, skip_fields)
+        prompt_template = self._load_prompt()
+        prompt = prompt_template.replace("{{title}}", title).replace("{{abstract}}", abstract or "")
         raw = await self.complete(prompt, SYSTEM_PROMPT)
 
         # Extract JSON block
@@ -170,5 +171,7 @@ class LLMProcessor:
 
         return default_result
 
+
+__all__ = ["llm_processor", "LLMProcessor", "SYSTEM_PROMPT"]
 
 llm_processor = LLMProcessor()

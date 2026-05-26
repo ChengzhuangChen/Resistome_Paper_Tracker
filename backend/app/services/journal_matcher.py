@@ -16,6 +16,14 @@ def _normalize(text: str) -> str:
     return re.sub(r"\s+", " ", str(text).lower().strip())
 
 
+def _strip_leading_the(text: str) -> str:
+    """Remove leading 'the ' for fuzzy matching (e.g. 'the isme journal' -> 'isme journal')."""
+    t = _normalize(text)
+    if t.startswith("the "):
+        return t[4:]
+    return t
+
+
 def _remove_punctuation(text: str) -> str:
     return re.sub(r"[^\w\s]", "", str(text).lower()).strip()
 
@@ -88,6 +96,11 @@ class JournalMatcher:
                 if name_val:
                     self._by_name[_normalize(name_val)] = entry
                     self._by_name_nopunct[_remove_punctuation(name_val)] = entry
+                    # Also index without leading "the" for PubMed matching
+                    no_the = _strip_leading_the(name_val)
+                    if no_the != _normalize(name_val):
+                        self._by_name[no_the] = entry
+                        self._by_name_nopunct[_remove_punctuation(no_the)] = entry
                 if issn_val:
                     self._by_issn[issn_val] = entry
 
@@ -166,6 +179,14 @@ class JournalMatcher:
         # 3. ISSN match
         if issn and issn in self._by_issn:
             return self._by_issn[issn]
+
+        # 4. Strip leading "the" and try again (PubMed vs xlsx naming difference)
+        norm_no_the = _strip_leading_the(journal_name)
+        nopunct_no_the = _remove_punctuation(norm_no_the)
+        if norm_no_the in self._by_name:
+            return self._by_name[norm_no_the]
+        if nopunct_no_the in self._by_name_nopunct:
+            return self._by_name_nopunct[nopunct_no_the]
 
         return None
 

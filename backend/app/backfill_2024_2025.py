@@ -1,20 +1,21 @@
+import argparse
 import asyncio
-from datetime import date
+from datetime import date, datetime
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import Paper
 from app.services.pubmed_fetcher import pubmed_fetcher
 from app.services.llm_processor import llm_processor
-from app.routers.update import estimate_jcr
 
 
-async def main():
+async def main(enrich: bool = True):
     db: Session = SessionLocal()
     try:
-        print("[Backfill] Fetching historical papers 2024-01-01 -> 2025-12-31...")
+        end = date.today()
+        print(f"[Backfill] Fetching historical papers 2021-01-01 -> {end}...")
         raw_papers = pubmed_fetcher.fetch_historical(
-            start_date=date(2024, 1, 1),
-            end_date=date(2025, 12, 31),
+            start_date=date(2021, 1, 1),
+            end_date=end,
         )
 
         # Deduplicate by PMID against existing DB records
@@ -34,7 +35,7 @@ async def main():
         for rp in new_papers:
             paper = Paper(
                 pmid=rp["pmid"],
-                doi=rp.get("doi"),
+                doi=rp.get("doi") or None,
                 title=rp["title"],
                 abstract_en=rp.get("abstract", ""),
                 journal=rp.get("journal"),
@@ -53,7 +54,14 @@ async def main():
             inserted.append(paper)
 
         db.commit()
-        print(f"[Backfill] Inserted {len(inserted)} papers. Now enriching with LLM...")
+        print(f"[Backfill] Inserted {len(inserted)} papers.")
+
+        if not enrich:
+            print("[Backfill] Skipping LLM enrichment (--no-enrich).")
+            print(f"\n[Backfill] Done. Inserted: {len(inserted)}, Enriched: 0, Failed: 0")
+            return
+
+        print("[Backfill] Now enriching with LLM...")
 
         # LLM enrichment (concurrency controlled by llm_processor.semaphore, default 5)
         enriched = 0
@@ -78,10 +86,6 @@ async def main():
                     "first_affiliation", paper.first_affiliation
                 )
 
-                # JCR fallback if missing
-                if not paper.jcr_quartile:
-                    paper.jcr_quartile = estimate_jcr(paper.journal)
-
                 db.commit()
                 enriched += 1
                 print(f"  [{idx}/{len(inserted)}] OK PMID {paper.pmid}")
@@ -99,4 +103,13 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(description="Backfill resistome papers from PubMed.")
+    parser.add_argument(
+        "--no-enrich",
+        dest="enrich",
+        action="store_false",
+        default=True,
+        help="Skip LLM enrichment (fetch-only mode).",
+    )
+    args = parser.parse_args()
+    asyncio.run(main(enrich=args.enrich))
