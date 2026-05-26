@@ -23,6 +23,9 @@ data/
 .vscode/
 .idea/
 
+# Claude Code
+.claude/
+
 # Journal partition data
 01fenqu.xlsx
 frontend/public/qrcode.png
