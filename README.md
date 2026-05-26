@@ -1,6 +1,18 @@
 # Resistome Literature Tracker
 
-耐药基因（Resistome）文献追踪平台，自动从 PubMed 抓取最新研究，支持 AI 摘要生成、数据可视化和多维度筛选。
+**Resistome Literature Tracker** 是一个专注于耐药基因（Antibiotic Resistance Genes, ARGs）领域的文献监测与追踪平台。通过自动化抓取 PubMed 论文，结合 AI 摘要生成和多维度可视化分析，帮助研究人员高效追踪前沿研究进展。
+
+## 数据来源与检索策略
+
+文献数据来自 PubMed 官方数据库，检索词覆盖以下关键词：
+
+```
+(resistome OR resistomes OR "antibiotic resistome" OR "antibiotic resistance gene" OR
+"antibiotic resistance genes" OR "antimicrobial resistance gene" OR "antimicrobial resistance genes" OR
+"antibiotic resistant gene" OR "AMR gene" OR "AMR genes" OR "ARGs")
+```
+
+目前收录 **2021 年 1 月 1 日**起发表的论文，系统每日 02:00（北京时间）自动同步更新，保证前沿文献不遗漏。
 
 ## 主要功能
 
