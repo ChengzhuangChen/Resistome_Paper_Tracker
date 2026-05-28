@@ -40,7 +40,7 @@
 .
 ├── docker-compose.yml
 ├── .env                      # 环境变量（需自行创建）
-├── 01fenqu.xlsx              # 期刊分区数据（需自行放置）
+├── New_JCR_Xinrui.xlsx      # 期刊分区数据（需自行放置）
 │
 ├── backend/
 │   ├── Dockerfile
@@ -114,7 +114,7 @@ FETCH_START_DATE=2021-01-01
 
 ### 2. 准备期刊分区数据
 
-将 `01fenqu.xlsx` 文件放入项目根目录（用于 JCR / 芯睿分区匹配）。
+将 `New_JCR_Xinrui.xlsx` 文件放入项目根目录（用于 JCR / 芯睿分区匹配）。
 
 ### 3. Docker 启动
 
